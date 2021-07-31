@@ -5,6 +5,7 @@ import com.example.routingandfilteringgateway.models.Student;
 import com.example.routingandfilteringgateway.repositories.AdminsRepo;
 import com.example.routingandfilteringgateway.repositories.StudentRepo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,6 +14,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -37,5 +40,24 @@ public class AccountDetails implements UserDetailsService {
             }
         }
         throw new UsernameNotFoundException("User not found");
+    }
+
+    public UUID getUUIDByEmailAndRole(String email, String role) {
+        if ("ROLE_ADMIN".equals(role)) {
+            Admin admin = adminsRepo.getByEmail(email);
+            return admin.getId();
+        }
+        Student student = studentRepo.getByEmail(email);
+        return student.getId();
+    }
+
+    public UUID getIdByUserDetails(UserDetails userDetails) {
+        String role = userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()).get(0);
+        return getUUIDByEmailAndRole(userDetails.getUsername(), role);
+    }
+
+    public UUID getIdByUser(User user) {
+        String role = user.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()).get(0);
+        return getUUIDByEmailAndRole(user.getUsername(), role);
     }
 }

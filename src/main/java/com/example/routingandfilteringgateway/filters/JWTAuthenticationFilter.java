@@ -1,12 +1,10 @@
 package com.example.routingandfilteringgateway.filters;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
 import com.example.routingandfilteringgateway.models.JWTPayloadData;
+import com.example.routingandfilteringgateway.services.AccountDetails;
 import com.example.routingandfilteringgateway.services.JWTService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.cdimascio.dotenv.Dotenv;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -23,6 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -31,11 +30,15 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     private final AuthenticationManager authenticationManager;
     private Dotenv dotenv;
     private JWTService jwtService;
-    public JWTAuthenticationFilter(AuthenticationManager authenticationManager, Dotenv dotenv, JWTService jwtService){
+    private AccountDetails accountDetails;
+
+    public JWTAuthenticationFilter(AccountDetails accountDetails,AuthenticationManager authenticationManager, Dotenv dotenv, JWTService jwtService) {
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.dotenv = dotenv;
+        this.accountDetails = accountDetails;
     }
+
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         String email = request.getParameter("email");
@@ -50,10 +53,15 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
         User user = (User) authResult.getPrincipal();
-        String accessToken = jwtService.getAccessToken(new JWTPayloadData(user.getUsername(), user.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList())));
-        String refreshToken = jwtService.getRefreshToken(new JWTPayloadData(user.getUsername(), user.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList())));
+        UUID id = accountDetails.getIdByUser(user);
+        String accessToken = jwtService.getAccessToken(new JWTPayloadData(user.getUsername(), id, user.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList())));
+        String refreshToken = jwtService.getRefreshToken(new JWTPayloadData(user.getUsername(), id, user.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList())));
         response.setContentType(APPLICATION_JSON_VALUE);
-        response.addCookie(new Cookie("rid", refreshToken));
+        Cookie ridCookie = new Cookie("rid", refreshToken);
+        ridCookie.setHttpOnly(true);
+        ridCookie.setPath("/");
+        ridCookie.setMaxAge(60 * 60 * 24 * 365);
+        response.addCookie(ridCookie);
         new ObjectMapper().writeValue(response.getOutputStream(), Map.of("actkn", accessToken));
     }
 }

@@ -2,12 +2,13 @@ package com.example.routingandfilteringgateway.config;
 
 import com.example.routingandfilteringgateway.filters.JWTAuthenticationFilter;
 import com.example.routingandfilteringgateway.filters.JWTAuthorizationFilter;
+import com.example.routingandfilteringgateway.services.AccountDetails;
 import com.example.routingandfilteringgateway.services.JWTService;
 import io.github.cdimascio.dotenv.Dotenv;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -16,8 +17,12 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 
-import static org.springframework.http.HttpMethod.*;
+import javax.servlet.http.Cookie;
+
+import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 @Configuration
@@ -28,6 +33,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final PasswordEncoder passwordEncoder;
     private final Dotenv dotenv;
     private final JWTService jwtService;
+    private final AccountDetails accountDetails;
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -36,9 +42,20 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        JWTAuthenticationFilter jwtAuthenticationFilter = new JWTAuthenticationFilter(authenticationManagerBean(), dotenv, jwtService);
+        JWTAuthenticationFilter jwtAuthenticationFilter = new JWTAuthenticationFilter(accountDetails, authenticationManagerBean(), dotenv, jwtService);
         jwtAuthenticationFilter.setFilterProcessesUrl("/api/login");
         http.csrf().disable();
+        http.cors();
+        http.logout().logoutUrl("/api/logout").addLogoutHandler((req, res, auth) -> {
+            for (var c : req.getCookies()) {
+                String cookieName = c.getName();
+                Cookie cookieDeleted = new Cookie(cookieName, null);
+                cookieDeleted.setMaxAge(0);
+                cookieDeleted.setPath("/");
+                cookieDeleted.setHttpOnly(true);
+                res.addCookie(cookieDeleted);
+            }
+        }).logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT));
         http.sessionManagement().sessionCreationPolicy(STATELESS);
         http.authorizeRequests().antMatchers("/api/login/**").permitAll();
         http.authorizeRequests().antMatchers("/api/refreshToken/**").permitAll();

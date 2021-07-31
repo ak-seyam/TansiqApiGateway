@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
@@ -30,11 +31,12 @@ public class refreshToken {
         if (payloadData != null) {
             String email = payloadData.getEmail();
             UserDetails userDetails = accountDetails.loadUserByUsername(email);
+            UUID id = accountDetails.getIdByUserDetails(userDetails);
             List<String> roles = userDetails.getAuthorities()
                     .stream()
                     .map(GrantedAuthority::getAuthority)
                     .collect(Collectors.toList());
-            String accessToken = jwtService.getAccessToken(new JWTPayloadData(email, roles));
+            String accessToken = jwtService.getAccessToken(new JWTPayloadData(email, id,roles));
             return new ResponseEntity<>(
                     Map.of("success", true, "actkn", accessToken),
                     new HttpHeaders(),

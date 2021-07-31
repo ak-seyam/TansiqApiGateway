@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -36,6 +37,7 @@ public class JWTServiceAuthJWT implements JWTService {
         return JWT.create()
                 .withSubject(payload.getEmail())
                 .withExpiresAt(new Date(System.currentTimeMillis() + (expirationTime * 1000)))
+                .withIssuer(payload.getId().toString())
                 .withClaim("role", payload.getRoles().get(0))
                 .sign(algorithm);
     }
@@ -58,6 +60,7 @@ public class JWTServiceAuthJWT implements JWTService {
             DecodedJWT decodedJWT = verifier.verify(token);
             JWTPayloadData jwtPayloadData = new JWTPayloadData(
                     decodedJWT.getSubject(),
+                    UUID.fromString(decodedJWT.getIssuer()),
                     List.of(decodedJWT.getClaim("role").asString())
             );
             return jwtPayloadData;

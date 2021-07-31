@@ -29,7 +29,8 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain filterChain) throws ServletException, IOException {
-        if (!req.getServletPath().equals("/api/login") || !req.getServletPath().equals("/api/refreshToken")) {
+        System.out.println("servlet path " + req.getServletPath());
+        if (!req.getServletPath().equals("/api/login") && !req.getServletPath().equals("/api/refreshToken")) {
             String authorizationHeader = req.getHeader(AUTHORIZATION);
             if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
                 String token = authorizationHeader.substring("Bearer ".length());
