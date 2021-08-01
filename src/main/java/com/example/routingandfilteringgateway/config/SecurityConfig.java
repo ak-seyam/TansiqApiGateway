@@ -21,8 +21,7 @@ import org.springframework.security.web.authentication.logout.HttpStatusReturnin
 
 import javax.servlet.http.Cookie;
 
-import static org.springframework.http.HttpMethod.GET;
-import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.http.HttpMethod.*;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 @Configuration
@@ -59,8 +58,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.sessionManagement().sessionCreationPolicy(STATELESS);
         http.authorizeRequests().antMatchers("/api/login/**").permitAll();
         http.authorizeRequests().antMatchers("/api/refreshToken/**").permitAll();
-        http.authorizeRequests().antMatchers("/api/core/tansiq/**").permitAll();
-        http.authorizeRequests().antMatchers(POST, "/api/core/studentFiles").hasAuthority("ROLE_ADMIN");
+        http.authorizeRequests().antMatchers(GET,"/api/core/tansiq/**").permitAll();
+        http.authorizeRequests().antMatchers("/api/core/majors").permitAll();
+        http.authorizeRequests().antMatchers(DELETE,"/api/core/tansiq/**").hasAuthority("ROLE_ADMIN");
+        http.authorizeRequests().antMatchers(POST, "/api/core/studentFiles/**").hasAuthority("ROLE_ADMIN");
         http.authorizeRequests().antMatchers(GET, "/api/core/admins/**").hasAuthority("ROLE_ADMIN");
         http.authorizeRequests().antMatchers("/api/core/students/**").hasAuthority("ROLE_STUDENT");
         http.addFilter(jwtAuthenticationFilter);
