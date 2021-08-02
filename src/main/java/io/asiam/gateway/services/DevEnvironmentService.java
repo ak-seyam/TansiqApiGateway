@@ -4,7 +4,7 @@ import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-@Service("devEnvService")
+//@Service("prodEnvService")
 @RequiredArgsConstructor
 public class DevEnvironmentService implements EnvironmentService{
     private final DotenvService dotenvService;

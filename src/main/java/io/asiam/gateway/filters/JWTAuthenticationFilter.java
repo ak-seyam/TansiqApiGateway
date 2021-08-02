@@ -27,14 +27,12 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
-    private Dotenv dotenv;
     private JWTService jwtService;
     private AccountDetails accountDetails;
 
-    public JWTAuthenticationFilter(AccountDetails accountDetails,AuthenticationManager authenticationManager, Dotenv dotenv, JWTService jwtService) {
+    public JWTAuthenticationFilter(AccountDetails accountDetails,AuthenticationManager authenticationManager, JWTService jwtService) {
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
-        this.dotenv = dotenv;
         this.accountDetails = accountDetails;
     }
 

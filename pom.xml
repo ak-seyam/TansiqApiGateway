@@ -55,7 +55,7 @@
 			<artifactId>ojdbc</artifactId>
 			<version>8</version>
 			<scope>system</scope>
-			<systemPath>${project.basedir}/ojdbc8-19.3.0.0.jar</systemPath>
+			<systemPath>${basedir}/lib/ojdbc8-19.3.0.0.jar</systemPath>
 		</dependency>
 
 		<dependency>
@@ -101,6 +101,9 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<includeSystemScope>true</includeSystemScope>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

@@ -22,7 +22,7 @@ public class JWTServiceAuthJWT implements JWTService {
     private final EncryptionAlgorithmService algorithmService;
 
     @Autowired
-    public JWTServiceAuthJWT(@Qualifier("devEnvService") EnvironmentService environmentService,
+    public JWTServiceAuthJWT(@Qualifier("prodEnvService") EnvironmentService environmentService,
                              EncryptionAlgorithmService algorithmService) {
         this.environmentService = environmentService;
         this.algorithmService = algorithmService;

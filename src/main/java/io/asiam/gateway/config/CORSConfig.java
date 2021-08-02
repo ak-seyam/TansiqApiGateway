@@ -15,7 +15,7 @@ public class CORSConfig {
     private final EnvironmentService environmentService;
 
     @Autowired
-    public CORSConfig(@Qualifier("devEnvService") EnvironmentService environmentService) {
+    public CORSConfig(@Qualifier("prodEnvService") EnvironmentService environmentService) {
         this.environmentService = environmentService;
     }
 

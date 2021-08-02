@@ -22,7 +22,7 @@ public class RoutingAndFilteringGatewayApplication {
     @Autowired
     private AdminsRepo adminsRepo;
     @Autowired
-    @Qualifier("devEnvService")
+    @Qualifier("prodEnvService")
     private EnvironmentService environmentService;
     @Autowired
     private PasswordEncoder passwordEncoder;

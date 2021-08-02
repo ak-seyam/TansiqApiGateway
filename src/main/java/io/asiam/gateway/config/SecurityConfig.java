@@ -30,7 +30,6 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final UserDetailsService userDetailsService;
     private final PasswordEncoder passwordEncoder;
-    private final Dotenv dotenv;
     private final JWTService jwtService;
     private final AccountDetails accountDetails;
 
@@ -41,7 +40,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        JWTAuthenticationFilter jwtAuthenticationFilter = new JWTAuthenticationFilter(accountDetails, authenticationManagerBean(), dotenv, jwtService);
+        JWTAuthenticationFilter jwtAuthenticationFilter = new JWTAuthenticationFilter(accountDetails, authenticationManagerBean(), jwtService);
         jwtAuthenticationFilter.setFilterProcessesUrl("/api/login");
         http.csrf().disable();
         http.cors();
