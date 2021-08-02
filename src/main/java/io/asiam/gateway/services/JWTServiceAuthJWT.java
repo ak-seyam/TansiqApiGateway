@@ -8,6 +8,7 @@ import io.asiam.gateway.models.JWTPayloadData;
 import io.github.cdimascio.dotenv.Dotenv;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -17,12 +18,13 @@ import java.util.UUID;
 @Service
 @Slf4j
 public class JWTServiceAuthJWT implements JWTService {
-    private final Dotenv dotenv;
+    private final EnvironmentService environmentService;
     private final EncryptionAlgorithmService algorithmService;
 
     @Autowired
-    public JWTServiceAuthJWT(Dotenv dotenv, EncryptionAlgorithmService algorithmService) {
-        this.dotenv = dotenv;
+    public JWTServiceAuthJWT(@Qualifier("devEnvService") EnvironmentService environmentService,
+                             EncryptionAlgorithmService algorithmService) {
+        this.environmentService = environmentService;
         this.algorithmService = algorithmService;
     }
 
@@ -45,12 +47,12 @@ public class JWTServiceAuthJWT implements JWTService {
     @Override
     public String getAccessToken(JWTPayloadData payload) {
         // TODO make expiration 15 mins
-        return getJwt(payload, dotenv.get("ACCESS_TOKEN_SECRET"), 15 * 60);
+        return getJwt(payload, environmentService.getEnv("ACCESS_TOKEN_SECRET"), 15 * 60);
     }
 
     @Override
     public String getRefreshToken(JWTPayloadData payload) {
-        return getJwt(payload, dotenv.get("REFRESH_TOKEN_SECRET"), 7 * 24 * 3600);
+        return getJwt(payload, environmentService.getEnv("REFRESH_TOKEN_SECRET"), 7 * 24 * 3600);
     }
 
     private JWTPayloadData verifyToken(String token, String secret) {
@@ -72,11 +74,11 @@ public class JWTServiceAuthJWT implements JWTService {
 
     @Override
     public JWTPayloadData verifyAccessToken(String token) {
-        return verifyToken(token, dotenv.get("ACCESS_TOKEN_SECRET"));
+        return verifyToken(token, environmentService.getEnv("ACCESS_TOKEN_SECRET"));
     }
 
     @Override
     public JWTPayloadData verifyRefreshToken(String token) {
-        return verifyToken(token, dotenv.get("REFRESH_TOKEN_SECRET"));
+        return verifyToken(token, environmentService.getEnv("REFRESH_TOKEN_SECRET"));
     }
 }
